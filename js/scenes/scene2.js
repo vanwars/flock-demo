@@ -1,87 +1,117 @@
-// Scene 2: search everyone who drove past a camera, filtered by registry and guessed attributes,
-// then follow one plate through the joins that fill in those fields. All invented.
+// Scene 2: how a join works (part A, one car) and a search of everyone who drove past a camera (part B).
+// Everything here is invented.
 import { el, DAYS } from "./shared.js";
-import { CAMS, ROADS, PLACES, TRIPS, route } from "./scene1-data.js";
-import { SRC, LAYERS } from "./profile-data.js";
+import { LAYERS } from "./profile-data.js";
 import { update as cardUpdate } from "./card.js";
+import { createJoin, joinDemo } from "./join.js";
+import { segmented, toggleChip, rangeWithTicks, actionStrip, announce } from "./ui.js";
 import { buildWorld, profileSearch, nodeXY, CAMS2, XS, YS } from "./world.js";
 
-export function mount(root) {
-  const $ = (sel) => root.querySelector(sel);
-  const svg = el("svg", {
-    viewBox: "0 0 600 380",
-    role: "img",
-    "aria-label": "Street map of the imaginary car's routes, with home and work pins appearing as data is joined.",
-  });
-  $("#s2-map").replaceChildren(svg);
-  for (const d of ROADS) el("path", { d, class: "c-road" }, svg);
-  for (const p of PLACES) el("text", { x: p.x, y: p.y, class: "c-place", "text-anchor": "middle" }, svg).textContent = p.label;
-  const traces = el("g", {}, svg);
-  for (const trip of TRIPS) {
-    const pts = [];
-    for (let i = 1; i < trip.reads.length; i++) {
-      const seg = route(trip.reads[i - 1].cam, trip.reads[i].cam);
-      pts.push(...(pts.length ? seg.slice(1) : seg));
-    }
-    if (pts.length > 1) {
-      el("polyline", { points: pts.map(([x, y]) => `${x + trip.jx},${y + trip.jy}`).join(" "), class: "c-trace" }, traces);
-    }
-  }
-  for (const [id, c] of Object.entries(CAMS)) {
-    el("circle", { cx: c.x, cy: c.y, r: 6, class: "c-cam" }, svg);
-    el("text", { x: c.x + 10, y: c.y - 8, class: "c-camlabel" }, svg).textContent = id;
-  }
-  const pins = el("g", {}, svg);
-  const pinAt = { home: [96, 290, "Alex Example, 412 Sample St."], work: [470, 90, "Example Corp."] };
+// ----- part A: four joins onto one plate -----
+const cellsOf = (li) => LAYERS[li].fields.map(([label, value, src], fi) => ({ id: `l${li}_${fi}`, label, value, src }));
+const BASE_IDS = ["plate", "vehicle", "route", "stops", "homeguess"];
+const BASE_CELLS = LAYERS[0].fields.map(([label, value, src], i) => ({ id: BASE_IDS[i], label, value, src }));
 
-  $("#s2-legend").innerHTML = Object.entries(SRC)
-    .map(([k, v]) => `<span class="chip s-${k}">${v}</span>`).join(" ");
+const JOIN_STEPS = [
+  {
+    file: "Vehicle registry", key: "plate", keyCell: "plate", keyValue: "XYZ-0417",
+    rows: [["XYZ-0417", "Alex Example · 412 Sample St."], ["QRS-2231", "J. Rivera · 9 Pine Ct."], ["ABC-9921", "M. Kim · 77 Oak Ave."]],
+    matchIndex: 0, adds: "name, address, age, sex, vehicle record", arrow: "registry", cells: cellsOf(1),
+    caption: "Looked up XYZ-0417 in the vehicle registry. Found 1 row. Copied its name, address, age and sex onto our row.",
+  },
+  {
+    file: "Address map", key: "address", keyCell: "l1_1", keyValue: "412 Sample St.",
+    rows: [["412 Sample St.", "0.3 mi from Cam 1"], ["9 Pine Ct.", "1.8 mi from Cam 6"], ["77 Oak Ave.", "0.5 mi from Cam 4"]],
+    matchIndex: 0, adds: "whether the address fits where the car sleeps", arrow: "map", cells: cellsOf(2),
+    caption: "Looked up the address on a map. It is a few blocks from Cam 1, where the car sleeps, so the guess from scene 1 is now a confirmed home.",
+  },
+  {
+    file: "Census statistics", key: "census area (from the address)", keyCell: "l1_1", keyValue: "block group 0034.02",
+    rows: [["BG 0034.02", "$55–65k · 62% renters"], ["BG 0034.01", "$72k · 48% renters"], ["BG 0035.00", "$41k · 71% renters"]],
+    matchIndex: 0, adds: "area income, renters, household size, education, a guessed ethnicity", arrow: "census", cells: cellsOf(3),
+    caption: "Looked up the home's census area. These are averages for the area, yet joined to a name they read like facts about one person. Race is on no record, so it is guessed.",
+  },
+  {
+    file: "Business directory", key: "place the car stays", keyCell: "route", keyValue: "near Cam 3",
+    rows: [["near Cam 3", "Example Corp."], ["near Cam 5", "Corner Grocery"], ["near Cam 4", "Gym & Fitness"]],
+    matchIndex: 0, adds: "likely workplace and hours", arrow: "directory", cells: cellsOf(4),
+    caption: "The car spends about nine hours a day near Cam 3. A business directory lists who is there: a likely employer.",
+  },
+];
 
-  let step = -1;
-  function draw() {
-    const shown = LAYERS.slice(0, step + 1);
-    const total = shown.reduce((n, l) => n + l.fields.length, 0);
-    $("#s2-count").textContent = total;
-    cardUpdate({ layers: step + 1 });
-    $("#s2-card").innerHTML = shown.length
-      ? shown.map((l, i) => l.fields.map(([label, value, src]) =>
-          `<div class="field${i === step ? " new" : ""}"><span class="fl">${label}</span>` +
-          `<span class="fv">${value}</span><span class="chip s-${src}">${SRC[src]}</span></div>`).join("")).join("")
-      : `<p class="note">Nothing yet. Press the button to start with the plate reads.</p>`;
-    $("#s2-why").textContent = step >= 0 ? LAYERS[step].why : "";
-    const next = LAYERS[step + 1];
-    const add = $("#s2-add");
-    add.textContent = next ? `+ ${next.button}` : "All sources joined";
-    add.disabled = !next;
-    pins.replaceChildren();
-    for (const l of shown) {
-      if (!l.pin) continue;
-      const [x, y, label] = pinAt[l.pin];
-      el("circle", { cx: x, cy: y, r: 9, class: "s2-pin" }, pins);
-      el("text", { x, y: y - 14, class: "c-camlabel", "text-anchor": "middle" }, pins).textContent = label;
-    }
-  }
-  $("#s2-add").addEventListener("click", () => { step++; draw(); });
-  $("#s2-reset").addEventListener("click", () => { step = -1; draw(); });
-  draw();
-  mountCrowd(root);
-}
-
-// ----- search by location: click a camera, then filter -----
+// ----- part B: search everyone -----
+const PRESETS = {
+  a: { delivery: true, hisp: true, age: 35 },
+  b: { delivery: false, hisp: true, age: 30 },
+  c: { delivery: true, hisp: false, age: 80 },
+};
 const hourLabel = (h) => (h === 0 || h === 24 ? "midnight" : h === 12 ? "noon" : `${h % 12} ${h < 12 ? "AM" : "PM"}`);
+const pluralize = (n, one, many) => (n === 1 ? one : many);
 
-function mountCrowd(root) {
-  const $ = (id) => root.querySelector(id);
+export function mount(root) {
+  const $ = (s) => root.querySelector(s);
+  const strip = actionStrip(root);
+  const partSel = $("#s2-part");
+  segmented(partSel);
+  const partA = $("#s2-part-a"), partB = $("#s2c-part");
+
+  // ----- part A -----
+  joinDemo($("#s2-jd"));
+  const join = createJoin($("#s2-join"), {
+    rowTitle: "Our row: one plate from scene 1",
+    baseCells: BASE_CELLS,
+    crumbs: ["plate", "name + address", "home confirmed", "census area", "workplace"],
+    baseReached: () => 1,
+    steps: JOIN_STEPS,
+    startCaption: "Press the highlighted card's button, or the red button above, to join it onto our row.",
+    onChange: () => {
+      cardUpdate({ layers: join.state().done + 1 });
+      // A join can finish after you switched to part B; only part A owns the strip while it is showing.
+      if (!partA.hidden) stripForA();
+    },
+  });
+  function stripForA() {
+    const s = join.state();
+    if (s.next) {
+      strip.set({
+        step: s.done + 1, total: s.total,
+        title: `Join the ${s.next.file.toLowerCase()} (matches on ${s.next.key})`,
+        label: `Join: ${s.next.file}`, onClick: join.joinNext,
+      });
+    } else {
+      strip.set({
+        step: s.total + 1, total: s.total,
+        title: "All four joined. One plate is now a person.",
+        label: "Search everyone", onClick: () => setPart("b"),
+      });
+    }
+  }
+  $("#s2-reset").addEventListener("click", () => {
+    join.reset();
+    cardUpdate({ layers: 1 });
+    stripForA();
+  });
+
+  // ----- part B: setup -----
   const w = buildWorld();
   const age = $("#s2c-age");
-  const daySel = $("#s2c-day"), fromSel = $("#s2c-from"), toSel = $("#s2c-to");
+  const daySel = $("#s2c-day"), fromSel = $("#s2c-from"), toSel = $("#s2c-to"), winSel = $("#s2c-window");
+  const genderSel = $("#s2c-gender"), deliveryCb = $("#s2c-delivery"), hispCb = $("#s2c-hisp"), truthCb = $("#s2c-truth");
   daySel.add(new Option("Any day", -1));
   DAYS.forEach((d, i) => daySel.add(new Option(d, i)));
   for (let h = 0; h < 24; h++) fromSel.add(new Option(h === 0 ? "any time" : hourLabel(h), h));
-  for (let h = 1; h <= 24; h++) toSel.add(new Option(h === 24 ? "end of day" : hourLabel(h), h));
+  for (let h = 1; h <= 24; h++) toSel.add(new Option(hourLabel(h), h));
   toSel.value = 24;
+  segmented(winSel);
+  segmented(genderSel);
+  toggleChip(deliveryCb, { hint: "a guess" });
+  toggleChip(hispCb, { hint: "a guess" });
+  toggleChip(truthCb);
+  rangeWithTicks(age, {
+    ticks: [[20, "20"], [40, "40"], [60, "60"], [80, "any"]],
+    fmt: (v) => (v >= 80 ? "any age" : `under ${v}`),
+  });
 
-  // ----- clickable camera map -----
   let cam = 6;
   const svg = el("svg", {
     viewBox: "0 0 600 380",
@@ -100,6 +130,7 @@ function mountCrowd(root) {
       class: "s2c-cam", tabindex: 0, role: "button",
       "aria-label": `Camera ${c.id}${c.label ? ", " + c.label : ""}`,
     }, svg);
+    el("title", {}, g).textContent = `Cam ${c.id}${c.label ? " · " + c.label : ""}: click to see who drove past`;
     el("circle", { cx: x, cy: y, r: 18, class: "s2c-hit" }, g);
     el("circle", { cx: x, cy: y, r: 7, class: "c-cam" }, g);
     el("text", { x: x + 10, y: y - 9, class: "c-camlabel" }, g).textContent = c.id;
@@ -110,33 +141,77 @@ function mountCrowd(root) {
     dots.set(c.id, g);
   }
 
+  const sync = (...els) => els.forEach((e) => e.dispatchEvent(new Event("sync")));
+  const camName = () => {
+    const c = CAMS2.find((k) => k.id === cam);
+    return `Cam ${cam}${c.label ? " · " + c.label : ""}`;
+  };
+
+  // Active-filter chips: each can be removed (the camera cannot; a search needs a place).
+  function drawChips(q) {
+    const list = [{ label: camName() }];
+    const clearers = [null];
+    if (q.weekday >= 0) { list.push({ label: `${DAYS[q.weekday]}s` }); clearers.push(() => { daySel.value = -1; }); }
+    if (q.h0 > 0 || q.h1 < 24) {
+      list.push({ label: `${q.h0 === 0 ? "midnight" : hourLabel(q.h0)} to ${q.h1 === 24 ? "midnight" : hourLabel(q.h1)}` });
+      clearers.push(() => { fromSel.value = 0; toSel.value = 24; });
+    }
+    if (q.win !== Infinity) { list.push({ label: `reads kept ${winSel.selectedOptions[0].dataset.short}` }); clearers.push(() => { winSel.value = 0; }); }
+    if (q.delivery) { list.push({ label: "likely delivery driver (guess)" }); clearers.push(() => { deliveryCb.checked = false; }); }
+    if (q.hispanic) { list.push({ label: "likely Hispanic (guess)" }); clearers.push(() => { hispCb.checked = false; }); }
+    if (q.gender) { list.push({ label: q.gender === "woman" ? "women" : "men" }); clearers.push(() => { genderSel.value = ""; }); }
+    if (q.maxAge < 200) { list.push({ label: `under ${q.maxAge}` }); clearers.push(() => { age.value = 80; }); }
+    const host = $("#s2c-chips");
+    host.replaceChildren(...list.map((c, i) => {
+      const s = document.createElement("span");
+      s.className = "afchip";
+      s.textContent = c.label;
+      if (clearers[i]) {
+        const x = document.createElement("button");
+        x.type = "button";
+        x.setAttribute("aria-label", `Remove filter: ${c.label}`);
+        x.textContent = "×";
+        x.addEventListener("click", () => { clearers[i](); sync(daySel, fromSel, toSel, winSel, deliveryCb, hispCb, genderSel, age); run(); });
+        s.append(" ", x);
+      } else s.style.paddingRight = "10px";
+      return s;
+    }));
+  }
+
   function run() {
-    const winH = Number($("#s2c-window").value);
-    $("#s2c-age-out").textContent = age.value;
-    const delivery = $("#s2c-delivery").checked, hispanic = $("#s2c-hisp").checked;
+    const winH = Number(winSel.value);
+    const delivery = deliveryCb.checked, hispanic = hispCb.checked;
+    const limit = Number(age.value) >= 80 ? 200 : Number(age.value);
     const q = {
       cam, t: 1007, win: winH || Infinity,
       weekday: Number(daySel.value), h0: Number(fromSel.value), h1: Number(toSel.value),
-      delivery, hispanic, gender: $("#s2c-gender").value, maxAge: Number(age.value),
+      delivery, hispanic, gender: genderSel.value, maxAge: limit,
     };
     for (const [id, g] of dots) g.classList.toggle("sel", id === cam);
-    const camInfo = CAMS2.find((c) => c.id === cam);
-    const place = `Cam ${cam}${camInfo.label ? " (" + camInfo.label + ")" : ""}`;
+    $("#s2c-where").textContent = `Selected: ${camName()}. Click another camera to move the search.`;
+    drawChips(q);
+
+    const r = profileSearch(w, q);
+    const truth = truthCb.checked;
+    const n = r.returned.length;
     const when = [
       q.weekday >= 0 ? `on ${DAYS[q.weekday]}s` : "",
       q.h0 > 0 || q.h1 < 24 ? `between ${q.h0 === 0 ? "midnight" : hourLabel(q.h0)} and ${q.h1 === 24 ? "midnight" : hourLabel(q.h1)}` : "",
     ].filter(Boolean).join(" ");
-    $("#s2c-where").textContent = `Selected: ${place}.`;
-
-    const r = profileSearch(w, q);
-    const truth = $("#s2c-truth").checked;
-    const n = r.returned.length;
     $("#s2c-summary").innerHTML =
-      `<b>${r.passedHere} plates</b> drove past ${place}${when ? " " + when : ""}. The filters pick <b>${n}</b> of them.`;
-    $("#s2c-accuracy").innerHTML = n || r.missed.length
-      ? `<div><b>${r.wrong.length}</b><span> of the ${n} picked do not fit: the guess was wrong</span></div>` +
-        `<div><b>${r.missed.length}</b><span> ${r.missed.length === 1 ? "person who fits was" : "people who fit were"} not picked</span></div>`
-      : "";
+      `<b>${r.passedHere} plates</b> drove past ${camName()}${when ? " " + when : ""}. The filters pick <b>${n}</b> of them.`;
+
+    $("#s2c-stats").innerHTML =
+      `<div class="stat"><b>${n}</b><span>${pluralize(n, "plate picked", "plates picked")}</span></div>` +
+      `<div class="stat${r.wrong.length ? " bad" : ""}"><b>${r.wrong.length}</b><span>${r.wrong.length ? "✗ " : ""}${pluralize(r.wrong.length, "pick was wrong", "picks were wrong")}: the guess got them wrong</span></div>` +
+      `<div class="stat${r.missed.length ? " bad" : ""}"><b>${r.missed.length}</b><span>${pluralize(r.missed.length, "person who fits was missed", "people who fit were missed")}</span></div>`;
+
+    const head =
+      `<thead><tr><th>Plate <span class="chip s-camera">camera</span></th>` +
+      `<th>Name, age, gender <span class="chip s-joined">registry</span></th>` +
+      `<th>Guessed <span class="chip s-estimate">guess</span></th>` +
+      (truth ? `<th>In fact <span class="chip claim">real answer</span></th>` : "") +
+      `<th>Result</th></tr></thead>`;
     const rows = r.returned.slice(0, 14).map(({ p, pH, fitsTruth }) => {
       const guess = [];
       if (delivery) guess.push("delivery driver");
@@ -144,29 +219,56 @@ function mountCrowd(root) {
       const real = [];
       if (delivery) real.push(`<span class="${p.job === "delivery driver" ? "" : "bad"}">${p.job}</span>`);
       if (hispanic) real.push(`<span class="${p.group === "Hispanic" ? "" : "bad"}">${p.group === "Hispanic" ? "Hispanic" : "not Hispanic (" + p.group + ")"}</span>`);
-      return `<tr class="${fitsTruth ? "" : "wrong"}"><td><code>${p.plate}</code></td><td>${p.name}</td>` +
-        `<td>${p.age}, ${p.gender}</td><td>${guess.join(" · ") || "(no guess used)"}</td>` +
-        (truth ? `<td>${real.join(" · ") || "-"}</td>` : "") + `</tr>`;
+      return `<tr class="${fitsTruth ? "" : "wrong"}"><td data-label="Plate"><code>${p.plate}</code></td>` +
+        `<td data-label="Name, age, gender">${p.name} · ${p.age} · ${p.gender}</td>` +
+        `<td data-label="Guessed">${guess.join(" · ") || "(no guess used)"}</td>` +
+        (truth ? `<td data-label="In fact">${real.join(" · ") || "-"}</td>` : "") +
+        `<td data-label="Result">${fitsTruth ? '<span class="verdict good">✓ fits</span>' : '<span class="verdict bad">✗ wrong guess</span>'}</td></tr>`;
     });
     $("#s2c-table").innerHTML = n
-      ? `<tr><th>Plate</th><th>Registry name</th><th>Age, gender</th><th>Guessed</th>${truth ? "<th>In fact</th>" : ""}</tr>` +
-        rows.join("") + (n > 14 ? `<tr><td colspan="5" class="note">…and ${n - 14} more.</td></tr>` : "")
-      : `<tr><td class="note">Nobody matches. Loosen a filter.</td></tr>`;
+      ? head + `<tbody>${rows.join("")}${n > 14 ? `<tr><td colspan="5" class="note">…and ${n - 14} more.</td></tr>` : ""}</tbody>`
+      : `<tbody><tr><td colspan="5"><div class="empty">Nobody matches. Loosen a filter, or remove one with its × above.</div></td></tr></tbody>`;
   }
-  const PRESETS = {
-    a: { delivery: true, hisp: true, age: 35 },
-    b: { delivery: false, hisp: true, age: 30 },
-    c: { delivery: true, hisp: false, age: 80 },
-  };
-  root.querySelectorAll("[data-s2c]").forEach((b) => b.addEventListener("click", () => {
-    const p = PRESETS[b.dataset.s2c];
-    $("#s2c-delivery").checked = p.delivery;
-    $("#s2c-hisp").checked = p.hisp;
+
+  const applyPreset = (p) => {
+    deliveryCb.checked = p.delivery;
+    hispCb.checked = p.hisp;
     age.value = p.age;
+    sync(deliveryCb, hispCb, age);
     run();
-  }));
-  for (const id of ["#s2c-day", "#s2c-from", "#s2c-to", "#s2c-window", "#s2c-delivery", "#s2c-hisp", "#s2c-gender", "#s2c-age", "#s2c-truth"]) {
-    $(id).addEventListener(id === "#s2c-age" ? "input" : "change", run);
+  };
+  root.querySelectorAll("[data-s2c]").forEach((b) => b.addEventListener("click", () => applyPreset(PRESETS[b.dataset.s2c])));
+  for (const e of [daySel, fromSel, toSel, winSel, deliveryCb, hispCb, genderSel, truthCb]) e.addEventListener("change", run);
+  age.addEventListener("input", run);
+
+  // ----- switching parts -----
+  let presetIdx = -1;
+  function stripForB() {
+    strip.set({
+      step: "Part B · Search everyone", total: 0,
+      title: "Click a camera, narrow the list, read the results",
+      label: "Try an example",
+      onClick: () => {
+        presetIdx = (presetIdx + 1) % 3;
+        applyPreset(PRESETS["abc"[presetIdx]]);
+        announce("Example search applied");
+      },
+    });
   }
-  run();
+  function setPart(p) {
+    partSel.value = p;
+    sync(partSel);
+    partA.hidden = p !== "a";
+    partB.hidden = p !== "b";
+    if (p === "a") stripForA();
+    else {
+      stripForB();
+      run();
+    }
+    if (p === "b") window.scrollTo({ top: root.querySelector(".card").getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" });
+  }
+  partSel.addEventListener("change", () => setPart(partSel.value));
+
+  cardUpdate({ layers: 1 });
+  setPart("a");
 }

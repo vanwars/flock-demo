@@ -105,17 +105,32 @@ export function inferHabits(reads, destinations) {
 // A stepper-friendly play loop: returns {toggle, stop}.
 export function player({ button, slider, max, step, ms, onTick }) {
   let timer = null;
+  // Works with a plain button or a round play button that has .pl-icon and .pl-text children.
+  const paint = (playing) => {
+    button.setAttribute("aria-pressed", String(playing));
+    const icon = button.querySelector(".pl-icon");
+    const text = button.querySelector(".pl-text");
+    if (icon && text) {
+      icon.textContent = playing ? "❚❚" : "▶";
+      text.textContent = playing ? "Pause" : "Play";
+    } else button.textContent = playing ? "❚❚ Pause" : "▶ Play";
+  };
   const stop = () => {
     clearInterval(timer);
     timer = null;
-    button.textContent = "▶ Play";
+    paint(false);
   };
   const toggle = () => {
+    button.classList.remove("pulse");
     if (timer) return stop();
-    if (Number(slider.value) >= max) slider.value = 0;
-    button.textContent = "❚❚ Pause";
+    if (Number(slider.value) >= max) {
+      slider.value = 0;
+      slider.dispatchEvent(new Event("sync"));
+    }
+    paint(true);
     timer = setInterval(() => {
       slider.value = Math.min(max, Number(slider.value) + step);
+      slider.dispatchEvent(new Event("sync")); // lets an enhanced slider move its bubble
       onTick();
       if (Number(slider.value) >= max) stop();
     }, ms);

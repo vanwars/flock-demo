@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How plate reads add up</title>
-<link rel="stylesheet" href="styles.css">
+<meta name="description" content="Four short, interactive scenes with invented data showing how license plate reads become profiles of people.">
+<link rel="stylesheet" href="scenes.css">
 <script>
   try {
     var t = localStorage.getItem("theme");
@@ -12,31 +13,64 @@
   } catch (e) {}
 </script>
 </head>
-<body>
-<header>
-  <div>
-    <h1>How plate reads add up</h1>
-    <p>Four concept scenes with invented data. No real person, plate, or camera is shown.</p>
+<body class="scenes">
+<a class="skip" href="#main">Skip to the scene</a>
+
+<header class="site-head">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <div>
+      <h1>How plate reads add up</h1>
+      <p>Four short scenes. Everything shown is invented.</p>
+    </div>
   </div>
-  <div class="header-actions">
-    <a class="btn" href="index.html">← Back to the map</a>
-    <button id="theme-toggle" class="btn" type="button"></button>
+  <div class="head-actions">
+    <a class="btn ghost" href="index.html"><span class="long">← Back to the map</span><span class="short" aria-label="Back to the map">← Map</span></a>
+    <button id="theme-toggle" class="btn icon" type="button"></button>
   </div>
 </header>
+
 <nav id="stepper" class="stepper" aria-label="Scenes"></nav>
-<div class="scene">
-  <div class="scene-inner scene-layout">
-    <div class="scene-main">
-      <div id="scene"></div>
-      <div id="facts"></div>
-      <div class="scene-nav">
-        <button id="prev" class="btn" type="button">← Previous scene</button>
-        <button id="next" class="btn" type="button">Next scene →</button>
-      </div>
+
+<main id="main" class="page">
+  <section id="intro" class="intro" aria-labelledby="intro-title" hidden>
+    <div class="intro-text">
+      <p class="eyebrow">Before you start</p>
+      <h2 id="intro-title">A plate isn't a name. Here is how it becomes one.</h2>
+      <p class="lede">
+        Four short scenes, about five minutes. Press, drag and click to see what plate readers can learn
+        when their data is combined with other data. Everything shown is invented.
+      </p>
     </div>
-    <aside id="factsheet" class="factsheet" aria-label="Data facts for this car"></aside>
+    <div class="intro-actions">
+      <button id="intro-start" class="btn primary" type="button">Start</button>
+      <button id="intro-skip" class="btn ghost" type="button">Skip</button>
+    </div>
+  </section>
+
+  <div class="scene-layout">
+    <div class="scene-main">
+      <div id="scene" class="scene" tabindex="-1"></div>
+      <div id="facts"></div>
+      <div id="outro"></div>
+    </div>
+    <aside id="factsheet" class="factsheet" aria-label="Data Facts: everything known about this car so far"></aside>
   </div>
+</main>
+
+<div class="navbar" role="group" aria-label="Move between scenes">
+  <button id="prev" class="btn ghost" type="button">← <span id="prev-label">Back</span></button>
+  <span class="navhint" aria-hidden="true">Tip: use the ← and → keys</span>
+  <button id="next" class="btn primary" type="button"><span id="next-label"></span> →</button>
 </div>
+
+<button id="fs-pill" class="fs-pill" type="button" aria-expanded="false" aria-controls="factsheet">
+  <span class="fs-pill-label">Data Facts</span> <b id="fs-pill-n">0</b> <span class="fs-pill-pct" id="fs-pill-pct"></span>
+</button>
+<div id="fs-backdrop" class="fs-backdrop" hidden></div>
+<div id="live" class="sr-only" aria-live="polite"></div>
+
+<noscript><p class="noscript">This page needs JavaScript to run the interactive scenes.</p></noscript>
 <script type="module" src="js/scenes/index.js"></script>
 </body>
 </html>

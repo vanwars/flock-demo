@@ -2,15 +2,22 @@
 // Each trip is drawn as a faint trace along the roads, so repeated routes build up.
 import { el, rng, clockText, inferHabits, player } from "./shared.js";
 import { update as cardUpdate } from "./card.js";
+import { segmented, rangeWithTicks } from "./ui.js";
 import { MAX_HOUR, CAMS, DESTINATIONS, PLACES, ROADS, route, TRIPS } from "./scene1-data.js";
 
 export function mount(root) {
   const $ = (sel) => root.querySelector(sel);
   const slider = $("#concept-slider");
   const clockOut = $("#concept-clock");
+  const countOut = $("#concept-count");
   const winSel = $("#concept-window");
   const insights = $("#concept-insights");
   slider.max = MAX_HOUR;
+  segmented(winSel);
+  rangeWithTicks(slider, {
+    ticks: [0, 1, 2, 3, 4, 5].map((w) => [w * 168, `Wk ${w + 1}`]),
+    fmt: (v) => clockText(v).replace("Week ", "Wk ").split(" · ")[1],
+  });
 
   const svg = el("svg", {
     viewBox: "0 0 600 380",
@@ -70,7 +77,8 @@ export function mount(root) {
       latest.setAttribute("cx", CAMS[last.cam].x);
       latest.setAttribute("cy", CAMS[last.cam].y);
     }
-    clockOut.textContent = `${clockText(t)} · ${seen.length} read${seen.length === 1 ? "" : "s"} on file`;
+    clockOut.textContent = clockText(t);
+    countOut.textContent = `${seen.length} read${seen.length === 1 ? "" : "s"} on file`;
 
     // Guesses an observer could make from what is on file right now.
     const out = [];
@@ -86,13 +94,18 @@ export function mount(root) {
       out.push(`Reads older than ${win >= 48 ? win / 24 + " days" : "a day"} are gone, so patterns that take longer to show up can't be seen.`);
     }
     if (!out.length) out.push(seen.length ? "Not enough history yet to see a pattern. Keep scrubbing forward." : "Nothing on file yet.");
-    insights.innerHTML = out.map((s) => `<li>${s}</li>`).join("");
+    // Highlight guesses that were not there a moment ago, so new discoveries catch the eye.
+    const known = new Set([...insights.children].map((li) => li.textContent));
+    insights.innerHTML = out.map((s) => `<li${known.size && !known.has(s) ? ' class="fresh"' : ""}>${s}</li>`).join("");
   }
 
   slider.addEventListener("input", update);
   winSel.addEventListener("change", update);
-  const play = player({ button: $("#concept-play"), slider, max: MAX_HOUR, step: 4, ms: 60, onTick: update });
+  const playBtn = $("#concept-play");
+  const play = player({ button: playBtn, slider, max: MAX_HOUR, step: 4, ms: 60, onTick: update });
+  playBtn.classList.add("pulse"); // draw the eye to the one thing to press first
   slider.value = 20;
+  slider.dispatchEvent(new Event("sync"));
   update();
   return () => play.stop();
 }

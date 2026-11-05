@@ -2,45 +2,91 @@
   Scene 3. Everything in it is invented: agencies are generic, numbers are made up.
   Filled in by js/scenes/scene3.js. Real-world cases belong in facts-3.html, with sources.
 -->
-<h2>Scene 3 · Who else can search the reads?</h2>
-<p class="note">
-  <span class="chip warn">Illustration</span>
-  Cameras belong to local agencies, but the reads sit in a vendor's cloud. Each agency chooses
-  whom to share with. Change the settings and see whose reads a search can reach.
-</p>
+<header class="scene-head">
+  <p class="eyebrow">Scene 3 of 4</p>
+  <h2 tabindex="-1">Your camera, someone else's search</h2>
+  <p class="lede">
+    Reads don't stay with the agency that owns the camera. They sit in a vendor's cloud, and each agency
+    chooses who else may search them. Change the settings and watch who can reach what.
+  </p>
+  <div class="try">
+    <b>Try this</b>
+    <ol>
+      <li>Switch who is searching</li>
+      <li>Change what campus police shares</li>
+      <li>Join a federal record at the bottom</li>
+    </ol>
+  </div>
+</header>
 
-<div class="s3-controls">
-  <label>Campus police shares:
-    <select id="s3-campus" class="btn"></select></label>
-  <label>City police shares:
-    <select id="s3-city" class="btn"></select></label>
-  <label>County sheriff shares:
-    <select id="s3-county" class="btn"></select></label>
-</div>
-<div class="s3-controls">
-  <span class="note">Search run by:</span>
-  <label><input type="radio" name="s3-who" value="state" checked> a state agency</label>
-  <label><input type="radio" name="s3-who" value="federal"> a federal immigration agency (another state)</label>
-</div>
+<section class="card" aria-label="Who can search which agency's reads">
+  <div class="actionstrip">
+    <div class="as-text">
+      <span class="as-step">Step 1 of 2</span>
+      <span class="as-title"></span>
+    </div>
+    <button class="btn primary as-go" type="button"><span class="as-label"></span> <span class="as-icon" aria-hidden="true">⇄</span></button>
+  </div>
+  <div class="card-body">
+    <div class="controls">
+      <div class="ctl">
+        <span class="ctl-label" id="s3-who-label">Who is running the search</span>
+        <select id="s3-who" aria-labelledby="s3-who-label">
+          <option value="state" data-short="A state agency">A state agency (in this state)</option>
+          <option value="federal" data-short="A federal immigration agency">A federal immigration agency (out of state)</option>
+        </select>
+      </div>
+    </div>
 
-<div id="s3-map" class="scene-map"></div>
-<p id="s3-result" class="note"></p>
+    <p class="ctl-label" style="margin:0 0 8px;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">Each agency decides who may search its reads</p>
+    <div class="sharing" id="s3-sharing">
+      <div class="share-row"><div class="who">Campus police<small>1,200 reads a month</small></div>
+        <select id="s3-campus" aria-label="Campus police shares reads with"></select></div>
+      <div class="share-row"><div class="who">City police<small>18,000 reads a month</small></div>
+        <select id="s3-city" aria-label="City police shares reads with"></select></div>
+      <div class="share-row"><div class="who">County sheriff<small>9,000 reads a month</small></div>
+        <select id="s3-county" aria-label="County sheriff shares reads with"></select></div>
+    </div>
 
-<h3>Why the setting matters</h3>
-<p class="note">
-  Once a read is reachable by another agency, the camera owner's own rules no longer decide how it
-  is searched or why. The only record is the other agency's search log, and the "reason" in it is
-  often a few typed words (invented examples):
-</p>
-<table class="s3-log">
-  <tr><td>10:14</td><td>Federal immigration agency</td><td>"investigation"</td></tr>
-  <tr><td>10:16</td><td>Federal immigration agency</td><td>"assist"</td></tr>
-  <tr><td>10:21</td><td>State agency</td><td>"stolen vehicle"</td></tr>
-</table>
+    <div id="s3-map" class="vis"></div>
+    <div class="legend-chips" aria-hidden="true">
+      <span class="lg"><span class="swatch open"></span>open: this searcher can reach these reads</span>
+      <span class="lg"><span class="swatch shut"></span>blocked</span>
+    </div>
+  </div>
+</section>
 
-<h3>Add a federal record</h3>
-<p class="note">A plate that can be reached is a plate that can be matched to other files.</p>
-<div class="s2-controls">
-  <button class="btn" id="s3-join" type="button">+ Join with federal case records</button>
-</div>
-<div id="s3-card" class="profile"></div>
+<section class="results" aria-labelledby="s3-res">
+  <h3 id="s3-res">What this search can reach</h3>
+  <p id="s3-result" aria-live="polite"></p>
+  <div class="reach-bars" id="s3-bars"></div>
+</section>
+
+<section class="block" aria-labelledby="s3-why">
+  <h3 id="s3-why">Why the setting matters</h3>
+  <p>
+    Once a read is reachable by another agency, the camera owner's own rules no longer decide how it is
+    searched or why. The only record is the other agency's search log, and the "reason" in it is often a few
+    typed words (invented examples):
+  </p>
+  <table class="auditlog">
+    <thead><tr><th>Time</th><th>Searched by</th><th>Reason typed</th></tr></thead>
+    <tbody>
+      <tr><td>10:14</td><td>Federal immigration agency</td><td>"investigation"</td></tr>
+      <tr><td>10:16</td><td>Federal immigration agency</td><td>"assist"</td></tr>
+      <tr><td>10:21</td><td>State agency</td><td>"stolen vehicle"</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card" aria-label="Join a federal record" style="margin-top:24px">
+  <div class="card-body">
+    <h3>A plate that can be reached can be matched to other files</h3>
+    <p class="note" style="max-width:66ch">
+      Same idea as scene 2: our row already has an owner and an address. Join one more list, kept generic here,
+      and see what a single read can turn into.
+    </p>
+    <div id="s3-join"></div>
+    <p style="margin-top:12px"><button class="btn small" id="s3-reset" type="button">↺ Start over</button></p>
+  </div>
+</section>

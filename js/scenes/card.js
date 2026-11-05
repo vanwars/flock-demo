@@ -59,8 +59,41 @@ let state = initial();
 let root = null;
 let shown = new Set();
 
-export function initCard(el) {
+let pill = null;
+let backdrop = null;
+let lastCount = 0;
+
+// On wide screens the label is a sticky column that can be collapsed. On narrow screens it is a bottom
+// sheet opened from a floating pill, so the facts are still one tap away.
+function setOpen(open) {
+  if (!root) return;
+  root.classList.toggle("open", open);
+  if (backdrop) backdrop.hidden = !open;
+  if (pill) pill.setAttribute("aria-expanded", String(open));
+  if (open) root.querySelector(".fs-toggle")?.focus();
+  else if (document.activeElement && root.contains(document.activeElement)) pill?.focus();
+}
+
+export function initCard(el, { pill: pillEl, backdrop: backdropEl } = {}) {
   root = el;
+  pill = pillEl ?? null;
+  backdrop = backdropEl ?? null;
+  root.addEventListener("click", (e) => {
+    if (!e.target.closest(".fs-toggle")) return;
+    if (window.matchMedia("(max-width: 1060px)").matches) setOpen(false);
+    else root.classList.toggle("collapsed");
+    const t = root.querySelector(".fs-toggle");
+    t?.setAttribute("aria-expanded", String(!root.classList.contains("collapsed")));
+    if (t) t.dataset.state = root.classList.contains("collapsed") ? "collapsed" : "expanded";
+    render(true);
+  });
+  pill?.addEventListener("click", () => setOpen(!root.classList.contains("open")));
+  backdrop?.addEventListener("click", () => setOpen(false));
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && root.classList.contains("open")) setOpen(false);
+  });
+  window.matchMedia("(min-width: 1061px)").addEventListener("change", (m) => m.matches && setOpen(false));
+  root.setAttribute("tabindex", "-1");
   render();
 }
 
@@ -94,8 +127,12 @@ function render(silent = false) {
       `<span class="fs-val">${r.value(state)}</span></span><b class="fs-pct">${share}%</b></div>`;
   };
   const stages = Object.keys(STAGES).map(Number).filter((n) => visible.some((r) => r.stage === n));
+  const keepScroll = root.scrollTop;
+  const collapsed = root.classList.contains("collapsed");
   root.innerHTML =
-    `<div class="fs-head"><div class="fs-title">Data Facts</div>` +
+    `<div class="fs-head"><div class="fs-top"><div class="fs-title">Data Facts</div>` +
+    `<button class="fs-toggle" type="button" aria-expanded="${!collapsed}">` +
+    `<span class="t-collapse">${collapsed ? "Expand" : "Collapse"}</span><span class="t-close">Close ✕</span></button></div>` +
     `<div class="fs-sub">Plate XYZ-0417 <i>(invented)</i></div>` +
     `<div class="fs-sub">Owner: ${named ? "Alex Example" : "<i>unknown</i>"}</div>` +
     `<div class="fs-sub">Serving size: 1 car, 6 weeks of reads</div>` +
@@ -103,6 +140,7 @@ function render(silent = false) {
     `<div class="fs-big"><span>Facts known</span><span>${visible.length}</span></div>` +
     `<div class="fs-meter" role="img" aria-label="${pct} percent of a full profile"><span style="width:${pct}%"></span></div>` +
     `<div class="fs-pct-head">% of a full profile</div></div>` +
+    `<div class="fs-rows">` +
     (stages.length
       ? stages.map((n) => `<div class="fs-stage">${STAGES[n]}</div>` + visible.filter((r) => r.stage === n).map(rowHtml).join("")).join("")
       : `<p class="fs-empty">No reads on file yet.</p>`) +
@@ -110,12 +148,24 @@ function render(silent = false) {
     `<div class="fs-legend">` +
     Object.entries(SRC_LABEL).map(([k, v]) => `<span><span class="fs-dot s-${k}"></span>${v}</span>`).join("") +
     `</div>` +
-    `<p class="fs-foot">All data is invented. Percentages are illustrative: each row's share of a complete profile.</p>`;
+    `<p class="fs-foot">All data is invented. Percentages are illustrative: each row's share of a complete profile.</p></div>`;
   shown = new Set(visible.map((r) => r.id));
+  root.scrollTop = keepScroll;
   // Keep the newest rows in view inside the (scrollable) label.
   const added = root.querySelectorAll(".fs-row.new");
   if (added.length) {
     const last = added[added.length - 1];
     root.scrollTop = Math.max(0, last.offsetTop + last.offsetHeight - root.clientHeight + 16);
   }
+  // The floating pill (narrow screens) mirrors the headline numbers and pulses when facts are added.
+  if (pill) {
+    pill.querySelector("#fs-pill-n").textContent = visible.length;
+    pill.querySelector("#fs-pill-pct").textContent = `· ${pct}%`;
+    if (visible.length > lastCount && lastCount > 0 && !silent) {
+      pill.classList.remove("pulse");
+      void pill.offsetWidth;
+      pill.classList.add("pulse");
+    }
+  }
+  lastCount = visible.length;
 }

@@ -1,77 +1,128 @@
 <!--
   Scene 2. Everything in it is invented, including names and addresses.
-  Filled in by js/scenes/scene2.js: a search by location (mountCrowd) and a join ladder for one car (mount).
+  Filled in by js/scenes/scene2.js. Part A = how joins work (join.js). Part B = search everyone.
 -->
-<h2>Scene 2 · Everyone who drove past, joined with records</h2>
-<p class="note">
-  <span class="chip warn">Illustration</span>
-  An invented town of 100 people and 12 cameras. Pick a camera, then narrow the list.
-  Registry fields (name, age, sex) are exact. Two things are <i>guesses</i>: a
-  "likely delivery driver" (guessed from driving pattern alone) and a "likely Hispanic"
-  (guessed from surname and neighborhood, since race is on no registry record).
-</p>
+<header class="scene-head">
+  <p class="eyebrow">Scene 2 of 4</p>
+  <h2 tabindex="-1">A plate becomes a person</h2>
+  <p class="lede">
+    A plate reader never learns a name. But a plate is a <b>key</b>, and any list that also contains plates
+    can be joined onto it. Learn how a join works, then search a whole town.
+  </p>
+  <div class="try">
+    <b>Try this</b>
+    <ol>
+      <li>In part A, press <i>Join</i> four times</li>
+      <li>Switch to part B and click a camera</li>
+      <li>Turn on filters and check the guesses</li>
+    </ol>
+  </div>
+</header>
 
-<h3>Search by location</h3>
-<p class="note">Click a camera on the map.</p>
-<div id="s2c-map" class="scene-map"></div>
-<p id="s2c-where" class="note"></p>
-
-<div class="presets">
-  <button class="btn" type="button" data-s2c="a">Delivery drivers, Hispanic, under 35</button>
-  <button class="btn" type="button" data-s2c="b">Hispanic, under 30</button>
-  <button class="btn" type="button" data-s2c="c">Delivery drivers, any</button>
-</div>
-<div class="searchbar">
-  <label>Day <select id="s2c-day" class="btn"></select></label>
-  <label>From <select id="s2c-from" class="btn"></select></label>
-  <label>To <select id="s2c-to" class="btn"></select></label>
-  <label>Keep reads for <select id="s2c-window" class="btn">
-    <option value="0">all six weeks</option>
-    <option value="720">30 days</option>
-    <option value="168">7 days</option>
-    <option value="24">1 day</option>
-  </select></label>
-</div>
-<div class="searchbar">
-  <label><input type="checkbox" id="s2c-delivery"> likely delivery driver</label>
-  <label><input type="checkbox" id="s2c-hisp" checked> likely Hispanic</label>
-  <label>Gender <select id="s2c-gender" class="btn">
-    <option value="">any</option><option value="woman">women</option><option value="man">men</option>
-  </select></label>
-  <label>Under age <input type="range" id="s2c-age" min="19" max="80" value="30"> <output id="s2c-age-out"></output></label>
-</div>
-<p id="s2c-summary"></p>
-<div id="s2c-accuracy" class="s2c-acc"></div>
-<label class="note"><input type="checkbox" id="s2c-truth" checked> Show the real answers next to the guesses</label>
-<div class="table-wrap"><table id="s2c-table" class="s2c-table"></table></div>
-<p class="note">
-  Every row is a person the system treats as a match. A wrong guess flags someone for
-  something they are not, and the people the guess misses are never flagged. The search
-  returns a list either way, and it needed no name, only a place.
-</p>
-
-<h3>How did each field get there? Follow one plate.</h3>
-<p class="note">
-  The same imaginary car as scene 1. Each button joins one more data source to the plate.
-  The name, address and numbers are made up.
-</p>
-<div class="s2-grid">
-  <div>
-    <div id="s2-map" class="scene-map"></div>
-    <div class="s2-controls">
-      <button class="btn" id="s2-add" type="button"></button>
-      <button class="btn" id="s2-reset" type="button">Start over</button>
+<section class="card" aria-label="Joins and search">
+  <div class="actionstrip">
+    <div class="as-text">
+      <span class="as-step"></span>
+      <span class="as-title"></span>
     </div>
-    <p id="s2-why" class="note"></p>
+    <div class="as-dots" hidden></div>
+    <button class="btn primary as-go" type="button"><span class="as-label"></span> <span class="as-icon" aria-hidden="true">→</span></button>
   </div>
-  <div>
-    <div class="stats"><span><b id="s2-count">0</b> facts known about this person</span></div>
-    <div id="s2-legend" class="s2-legend"></div>
-    <div id="s2-card" class="profile"></div>
-  </div>
-</div>
 
-<p class="note">
-  Nothing here needed a camera to see a face. A plate is a key: it opens any file that
-  lists plates, and each file adds fields to the same row.
-</p>
+  <div class="parts">
+    <select id="s2-part" aria-label="Which part">
+      <option value="a" data-short="A · How a join works">A · How a join works (one car)</option>
+      <option value="b" data-short="B · Search everyone">B · Search everyone (100 cars)</option>
+    </select>
+    <p class="note">Part A explains the idea with one car. Part B does the same for the whole town.</p>
+  </div>
+
+  <div class="card-body">
+    <!-- PART A -->
+    <div class="part" id="s2-part-a">
+      <div id="s2-jd"></div>
+      <h3>Now join four lists onto one plate</h3>
+      <p class="note" style="max-width:66ch">
+        This is the car from scene 1. Each card is a list that someone holds. Look for the highlighted
+        row: it has the same key as our row. Everything here is made up, including the name.
+      </p>
+      <div id="s2-join"></div>
+      <p style="margin-top:12px"><button class="btn small" id="s2-reset" type="button">↺ Start over</button></p>
+    </div>
+
+    <!-- PART B -->
+    <div class="part" id="s2c-part" hidden>
+      <div class="examples">
+        <span>Try an example</span>
+        <button class="btn small" type="button" data-s2c="a">Delivery drivers, Hispanic, under 35</button>
+        <button class="btn small" type="button" data-s2c="b">Hispanic, under 30</button>
+        <button class="btn small" type="button" data-s2c="c">Delivery drivers, any</button>
+      </div>
+      <p class="note" style="max-width:70ch">
+        An invented town of 100 people and 12 cameras. Registry fields (name, age, sex) are exact.
+        Two things are <b>guesses</b>: a "likely delivery driver" (guessed from driving pattern alone) and
+        a "likely Hispanic" (guessed from surname and neighborhood, because race is on no registry record).
+      </p>
+      <div class="search-grid">
+        <div>
+          <h3>1 · Pick a camera</h3>
+          <div id="s2c-map" class="vis"></div>
+          <p id="s2c-where" class="note"></p>
+        </div>
+        <div>
+          <h3>2 · Narrow it down</h3>
+          <fieldset class="fgroup">
+            <legend>Where and when</legend>
+            <div class="fgrid">
+              <label class="ctl"><span class="ctl-label">Day</span><select id="s2c-day"></select></label>
+              <label class="ctl"><span class="ctl-label">From</span><select id="s2c-from"></select></label>
+              <label class="ctl"><span class="ctl-label">To</span><select id="s2c-to"></select></label>
+            </div>
+            <div class="ctl">
+              <span class="ctl-label" id="s2c-win-label">Keep reads for</span>
+              <select id="s2c-window" aria-labelledby="s2c-win-label">
+                <option value="0" data-short="6 weeks">all six weeks</option>
+                <option value="720" data-short="30 days">30 days</option>
+                <option value="168" data-short="7 days">7 days</option>
+                <option value="24" data-short="1 day">1 day</option>
+              </select>
+            </div>
+          </fieldset>
+          <fieldset class="fgroup">
+            <legend>Who (joined data)</legend>
+            <div class="ctl-row">
+              <label><input type="checkbox" id="s2c-delivery"> Likely delivery driver</label>
+              <label><input type="checkbox" id="s2c-hisp"> Likely Hispanic</label>
+            </div>
+            <div class="ctl">
+              <span class="ctl-label" id="s2c-gender-label">Gender (from registry)</span>
+              <select id="s2c-gender" aria-labelledby="s2c-gender-label">
+                <option value="" data-short="Any">any</option>
+                <option value="woman" data-short="Women">women</option>
+                <option value="man" data-short="Men">men</option>
+              </select>
+            </div>
+            <div class="ctl">
+              <label class="ctl-label" for="s2c-age">Younger than (age, from registry)</label>
+              <input type="range" id="s2c-age" min="19" max="80" value="80">
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="results">
+        <h3>3 · Read the results</h3>
+        <div id="s2c-chips" class="active-chips" aria-label="Active filters"></div>
+        <p id="s2c-summary" aria-live="polite"></p>
+        <div id="s2c-stats" class="statrow"></div>
+        <label class="note"><input type="checkbox" id="s2c-truth" checked> Show the real answers next to the guesses</label>
+        <div class="tablewrap"><table id="s2c-table" class="restable"></table></div>
+        <p class="note" style="max-width:70ch">
+          Every row is a person the system treats as a match. A wrong guess flags someone for something they are
+          not, and the people the guess misses are never flagged. The search returns a list either way, and it
+          needed no name, only a place.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
