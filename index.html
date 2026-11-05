@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flock Cameras at UNC Campuses</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+<script>
+  try {
+    var t = localStorage.getItem("theme");
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Flock Safety cameras at UNC System campuses</h1>
+    <p>Click a campus or a camera to see how its data is collected, stored, and shared.</p>
+  </div>
+  <div class="header-actions">
+    <select id="campus-picker" aria-label="Choose a campus">
+      <option value="">All campuses</option>
+    </select>
+    <label id="overlay-opacity-wrap" hidden>
+      <span class="sr-only">Campus map opacity</span>
+      <input id="overlay-opacity" type="range" min="0.2" max="1" step="0.05" value="0.8">
+    </label>
+    <button id="overlay-toggle" class="btn" type="button" aria-pressed="false" title="Show UNC Asheville campus map" aria-label="Show UNC Asheville campus map">🎓</button>
+    <button id="satellite-toggle" class="btn" type="button" aria-pressed="false"></button>
+    <button id="theme-toggle" class="btn" type="button"></button>
+  </div>
+</header>
+<main>
+  <div id="map"></div>
+  <button id="panel-toggle" class="btn" type="button" aria-controls="panel-wrap" aria-expanded="true"></button>
+  <aside id="panel-wrap">
+    <div id="panel"></div>
+    <footer id="provenance">
+      Camera locations: DeFlock / OpenStreetMap contributors (ODbL), crowd-sourced and
+      possibly incomplete. Anything marked “not yet confirmed” still needs a primary source.
+    </footer>
+  </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!--
+  Scene 1. Everything in it is invented. The SVG and text are filled in by js/scenes/scene1.js.
+-->
+<h2>Scene 1 · One person's reads</h2>
+<p class="note">
+  <span class="chip warn">Illustration</span>
+  Six weeks of one imaginary car. Each faint line is one trip; routes that repeat get darker.
+  Press play, or drag the slider through the weeks.
+</p>
+
+<div class="concept">
+  <div class="concept-controls">
+    <button class="btn" id="concept-play" type="button">▶ Play</button>
+    <label class="concept-time">
+      <span class="sr-only">Time</span>
+      <input id="concept-slider" type="range" min="0" max="1007" step="1" value="20">
+    </label>
+    <output id="concept-clock" class="note"></output>
+  </div>
+  <label class="note concept-retention">
+    Pretend the system keeps reads for:
+    <select id="concept-window" class="btn">
+      <option value="0">all six weeks (no limit)</option>
+      <option value="720">30 days</option>
+      <option value="168">7 days</option>
+      <option value="24">1 day</option>
+    </select>
+  </label>
+
+  <div id="concept-map"></div>
+
+  <h3>What someone could guess from the reads on file</h3>
+  <ul id="concept-insights" class="concept-insights"></ul>
+
+  <p class="note">
+    The plate text links every sighting, so no triangulation is needed: each
+    camera only has to read the plate once. Real systems also record make, color
+    and distinguishing features, and many can be searched across agencies. How
+    much history exists depends on how long reads are kept.
+  </p>
+</div>

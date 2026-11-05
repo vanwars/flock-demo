@@ -1,0 +1,46 @@
+<!--
+  Scene 3. Everything in it is invented: agencies are generic, numbers are made up.
+  Filled in by js/scenes/scene3.js. Real-world cases belong in facts-3.html, with sources.
+-->
+<h2>Scene 3 · Who else can search the reads?</h2>
+<p class="note">
+  <span class="chip warn">Illustration</span>
+  Cameras belong to local agencies, but the reads sit in a vendor's cloud. Each agency chooses
+  whom to share with. Change the settings and see whose reads a search can reach.
+</p>
+
+<div class="s3-controls">
+  <label>Campus police shares:
+    <select id="s3-campus" class="btn"></select></label>
+  <label>City police shares:
+    <select id="s3-city" class="btn"></select></label>
+  <label>County sheriff shares:
+    <select id="s3-county" class="btn"></select></label>
+</div>
+<div class="s3-controls">
+  <span class="note">Search run by:</span>
+  <label><input type="radio" name="s3-who" value="state" checked> a state agency</label>
+  <label><input type="radio" name="s3-who" value="federal"> a federal immigration agency (another state)</label>
+</div>
+
+<div id="s3-map" class="scene-map"></div>
+<p id="s3-result" class="note"></p>
+
+<h3>Why the setting matters</h3>
+<p class="note">
+  Once a read is reachable by another agency, the camera owner's own rules no longer decide how it
+  is searched or why. The only record is the other agency's search log, and the "reason" in it is
+  often a few typed words (invented examples):
+</p>
+<table class="s3-log">
+  <tr><td>10:14</td><td>Federal immigration agency</td><td>"investigation"</td></tr>
+  <tr><td>10:16</td><td>Federal immigration agency</td><td>"assist"</td></tr>
+  <tr><td>10:21</td><td>State agency</td><td>"stolen vehicle"</td></tr>
+</table>
+
+<h3>Add a federal record</h3>
+<p class="note">A plate that can be reached is a plate that can be matched to other files.</p>
+<div class="s2-controls">
+  <button class="btn" id="s3-join" type="button">+ Join with federal case records</button>
+</div>
+<div id="s3-card" class="profile"></div>

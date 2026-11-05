@@ -1,0 +1,20 @@
+<!--
+  Fallback "What we know" card, used for every campus that has no file of its own.
+  To research a campus, copy unca.html to partials/what-we-know/<campus id>.html
+  (ids are in js/config.js, e.g. "ncsu") and fill in the rows. No code change needed.
+-->
+<section class="data-use what-we-know">
+  <h3>What we know: {{name}}</h3>
+  <p class="note">
+    <span class="chip warn">TODO</span>
+    This campus has not been researched yet. These questions still need answers:
+  </p>
+  <ul class="note">
+    <li>How long does {{name}} keep camera data?</li>
+    <li>Who can search it, and what reason must they give?</li>
+    <li>Is it shared with other agencies, and which ones?</li>
+    <li>Are search audit logs available to the public?</li>
+  </ul>
+</section>
+
+{{> data-use}}

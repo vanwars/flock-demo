@@ -1,0 +1,66 @@
+<!--
+  Scene 4. Everything in it is invented. Filled in by js/scenes/scene4.js.
+  Real-world examples belong in facts-4.html, with sources.
+-->
+<h2>Scene 4 · Buying the missing piece</h2>
+<p class="note">
+  <span class="chip warn">Illustration</span>
+  Plate reads say <i>where and when</i>, but no name. A purchased file of phone locations also says
+  <i>where and when</i>, tagged with an anonymous advertising ID. Neither names anyone. Lining them up does.
+</p>
+
+<div class="concept-controls">
+  <label class="concept-time">
+    <span class="note">Sightings of the plate that are lined up with phone pings: <b id="s4-k-out">0</b></span>
+    <input id="s4-k" type="range" min="0" max="12" step="1" value="0">
+  </label>
+</div>
+<label class="note concept-retention">
+  How exact is the phone data?
+  <select id="s4-prec" class="btn">
+    <option value="0,5">Precise: same intersection, within 5 minutes</option>
+    <option value="1,20" selected>Typical: within a block, within 20 minutes</option>
+    <option value="2,60">Coarse: within two blocks, within an hour</option>
+  </select>
+</label>
+
+<div id="s4-map" class="scene-map"></div>
+<div class="legend">
+  <span><span class="dot" style="background:var(--campus)"></span>plate sighting</span>
+  <span><span class="dot" style="background:#2563eb"></span>phone still possible</span>
+  <span><span class="dot" style="background:var(--muted)"></span>nearby, but ruled out earlier</span>
+</div>
+
+<div class="s4-count">
+  <div><b id="s4-n">100</b><span> phones could be this car's driver</span></div>
+  <div id="s4-ids" class="s4-ids"></div>
+</div>
+<p id="s4-msg" class="note"></p>
+
+<h3>Then buy the rest</h3>
+<p class="note">
+  Once one advertising ID is tied to the plate, other purchased files that use the same ID
+  can attach a phone number, a name, an address, shopping habits. Each file only needs to
+  share one key with another.
+</p>
+<div id="s4-graph" class="scene-map"></div>
+<div class="s2-controls">
+  <button class="btn" type="button" data-file="b">+ Advertising-ID linking file</button>
+  <button class="btn" type="button" data-file="c">+ People-search / credit-header file</button>
+  <button class="btn" type="button" data-file="d">+ Loyalty-card purchases</button>
+  <button class="btn" type="button" id="s4-reset">Start over</button>
+</div>
+<p id="s4-facts" class="note"></p>
+
+<h3>What would limit this</h3>
+<ul class="concept-insights">
+  <li><b>Shorter retention</b> on reads and on purchased location data: fewer sightings to line up.</li>
+  <li><b>Warrant or court-order rules</b> for searching reads and for buying data about people.</li>
+  <li><b>Limits on sharing</b> outside the agency that owns the camera, and on who may search.</li>
+  <li><b>Search logs</b> with a specific reason and a case number, reviewed and published.</li>
+  <li><b>Vendor limits</b>: not collecting or selling precise phone locations in the first place.</li>
+</ul>
+<p class="note">
+  These are the same questions the map's "What we know" cards ask of each campus:
+  how long, who can search, who it is shared with, and what oversight exists.
+</p>

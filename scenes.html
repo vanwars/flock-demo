@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How plate reads add up</title>
+<link rel="stylesheet" href="styles.css">
+<script>
+  try {
+    var t = localStorage.getItem("theme");
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  } catch (e) {}
+</script>
+</head>
+<body>
+<header>
+  <div>
+    <h1>How plate reads add up</h1>
+    <p>Four concept scenes with invented data. No real person, plate, or camera is shown.</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn" href="index.html">← Back to the map</a>
+    <button id="theme-toggle" class="btn" type="button"></button>
+  </div>
+</header>
+<nav id="stepper" class="stepper" aria-label="Scenes"></nav>
+<div class="scene">
+  <div class="scene-inner scene-layout">
+    <div class="scene-main">
+      <div id="scene"></div>
+      <div id="facts"></div>
+      <div class="scene-nav">
+        <button id="prev" class="btn" type="button">← Previous scene</button>
+        <button id="next" class="btn" type="button">Next scene →</button>
+      </div>
+    </div>
+    <aside id="factsheet" class="factsheet" aria-label="Data facts for this car"></aside>
+  </div>
+</div>
+<script type="module" src="js/scenes/index.js"></script>
+</body>
+</html>

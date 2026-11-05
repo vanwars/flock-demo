@@ -1,0 +1,77 @@
+<!--
+  Scene 2. Everything in it is invented, including names and addresses.
+  Filled in by js/scenes/scene2.js: a search by location (mountCrowd) and a join ladder for one car (mount).
+-->
+<h2>Scene 2 · Everyone who drove past, joined with records</h2>
+<p class="note">
+  <span class="chip warn">Illustration</span>
+  An invented town of 100 people and 12 cameras. Pick a camera, then narrow the list.
+  Registry fields (name, age, sex) are exact. Two things are <i>guesses</i>: a
+  "likely delivery driver" (guessed from driving pattern alone) and a "likely Hispanic"
+  (guessed from surname and neighborhood, since race is on no registry record).
+</p>
+
+<h3>Search by location</h3>
+<p class="note">Click a camera on the map.</p>
+<div id="s2c-map" class="scene-map"></div>
+<p id="s2c-where" class="note"></p>
+
+<div class="presets">
+  <button class="btn" type="button" data-s2c="a">Delivery drivers, Hispanic, under 35</button>
+  <button class="btn" type="button" data-s2c="b">Hispanic, under 30</button>
+  <button class="btn" type="button" data-s2c="c">Delivery drivers, any</button>
+</div>
+<div class="searchbar">
+  <label>Day <select id="s2c-day" class="btn"></select></label>
+  <label>From <select id="s2c-from" class="btn"></select></label>
+  <label>To <select id="s2c-to" class="btn"></select></label>
+  <label>Keep reads for <select id="s2c-window" class="btn">
+    <option value="0">all six weeks</option>
+    <option value="720">30 days</option>
+    <option value="168">7 days</option>
+    <option value="24">1 day</option>
+  </select></label>
+</div>
+<div class="searchbar">
+  <label><input type="checkbox" id="s2c-delivery"> likely delivery driver</label>
+  <label><input type="checkbox" id="s2c-hisp" checked> likely Hispanic</label>
+  <label>Gender <select id="s2c-gender" class="btn">
+    <option value="">any</option><option value="woman">women</option><option value="man">men</option>
+  </select></label>
+  <label>Under age <input type="range" id="s2c-age" min="19" max="80" value="30"> <output id="s2c-age-out"></output></label>
+</div>
+<p id="s2c-summary"></p>
+<div id="s2c-accuracy" class="s2c-acc"></div>
+<label class="note"><input type="checkbox" id="s2c-truth" checked> Show the real answers next to the guesses</label>
+<div class="table-wrap"><table id="s2c-table" class="s2c-table"></table></div>
+<p class="note">
+  Every row is a person the system treats as a match. A wrong guess flags someone for
+  something they are not, and the people the guess misses are never flagged. The search
+  returns a list either way, and it needed no name, only a place.
+</p>
+
+<h3>How did each field get there? Follow one plate.</h3>
+<p class="note">
+  The same imaginary car as scene 1. Each button joins one more data source to the plate.
+  The name, address and numbers are made up.
+</p>
+<div class="s2-grid">
+  <div>
+    <div id="s2-map" class="scene-map"></div>
+    <div class="s2-controls">
+      <button class="btn" id="s2-add" type="button"></button>
+      <button class="btn" id="s2-reset" type="button">Start over</button>
+    </div>
+    <p id="s2-why" class="note"></p>
+  </div>
+  <div>
+    <div class="stats"><span><b id="s2-count">0</b> facts known about this person</span></div>
+    <div id="s2-legend" class="s2-legend"></div>
+    <div id="s2-card" class="profile"></div>
+  </div>
+</div>
+
+<p class="note">
+  Nothing here needed a camera to see a face. A plate is a key: it opens any file that
+  lists plates, and each file adds fields to the same row.
+</p>
