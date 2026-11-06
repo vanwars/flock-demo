@@ -90,7 +90,7 @@ function errorState(n) {
     <h2>Scene ${n} could not load</h2>
     <p>This page loads its scenes from separate files, so it has to be served over http rather than opened as a file.</p>
     <p><code id="cmd">${cmd}</code> <button class="btn small" id="copycmd" type="button">Copy</button></p>
-    <p class="note">Run that in the project folder, then open <code>http://localhost:8000/scenes.html</code>.</p>
+    <p class="note">Run that in the project folder, then open <code>http://localhost:8000/data-sharing/scenes.html</code>.</p>
   </div></div>`;
   $("copycmd").onclick = async () => {
     try {
@@ -175,7 +175,7 @@ async function go(i, { initial = false } = {}) {
 
 prev.onclick = () => go(current - 1);
 next.onclick = () => {
-  if (current === TOTAL - 1) location.href = "index.html";
+  if (current === TOTAL - 1) location.href = "../map/index.html";
   else go(current + 1);
 };
 window.addEventListener("hashchange", () => go(fromHash()));

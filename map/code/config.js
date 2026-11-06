@@ -1,4 +1,4 @@
-export const DATA_URL = "cameras-nc.geojson";
+export const DATA_URL = "code/data/cameras-nc.geojson";
 export const DEFAULT_RADIUS_M = 900; // cameras within a campus's radius count as "on/near campus"
 export const NC_BOUNDS = [[33.8, -84.4], [36.6, -75.4]]; // initial statewide view
 export const CAMPUS_BUBBLE_MAX_ZOOM = 11; // at this zoom and farther out, show one count bubble per campus
@@ -28,7 +28,7 @@ export const BASEMAP_OPTIONS = { maxNativeZoom: 16, maxZoom: 19, attribution: AT
 export const CAMPUS_OVERLAYS = [
   {
     id: "unca",
-    url: "overlays/unca-campus-map.webp",
+    url: "code/overlays/unca-campus-map.webp",
     bounds: [[35.61116, -82.57383], [35.62101, -82.55986]],
     attribution: "Campus map: UNC Asheville / WordCamp Asheville 2019",
   },

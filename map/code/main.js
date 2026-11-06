@@ -1,6 +1,7 @@
 import { CAMPUSES } from "./config.js";
 import { loadCameras, countByCampus } from "./cameras.js";
 import { createMap, addCameras, focusCampus, focusAll } from "./map.js";
+import "./modal.js";
 import { initTheme } from "./theme.js";
 import { showStatewide, showCampus, showCamera, showError } from "./panel.js";
 
@@ -44,12 +45,12 @@ async function main() {
       focusCampus(map, campus);
       showCampus(campus, counts, showAll);
     };
-    const selectCamera = (cam) => (
-      expandPanel(),
-      cam.campus
-        ? showCamera(cam, `← ${cam.campus.short}`, () => selectCampus(cam.campus))
-        : showCamera(cam, "← All campuses", showAll)
-    );
+    // A camera on/near a campus shows its own details plus that campus's "What we know" info.
+    const selectCamera = (cam) => {
+      expandPanel();
+      if (cam.campus) picker.value = cam.campus.id;
+      showCamera(cam, counts, "← All campuses", showAll);
+    };
 
     for (const c of CAMPUSES) picker.add(new Option(`${c.name} (${counts.get(c.id)})`, c.id));
     picker.onchange = () => {

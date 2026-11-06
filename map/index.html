@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flock Cameras at UNC Campuses</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="content/style.css">
 <script>
   try {
     var t = localStorage.getItem("theme");
@@ -27,7 +27,9 @@
       <span class="sr-only">Campus map opacity</span>
       <input id="overlay-opacity" type="range" min="0.2" max="1" step="0.05" value="0.8">
     </label>
-    <button id="overlay-toggle" class="btn" type="button" aria-pressed="false" title="Show UNC Asheville campus map" aria-label="Show UNC Asheville campus map">🎓</button>
+    <!-- Campus map button is hidden. To bring it back, delete the word "hidden" below. -->
+    <button id="overlay-toggle" class="btn" type="button" hidden aria-pressed="false" title="Show UNC Asheville campus map" aria-label="Show UNC Asheville campus map">🎓</button>
+    <button id="more-info" class="btn" type="button" data-modal="more-info">More info</button>
     <button id="satellite-toggle" class="btn" type="button" aria-pressed="false"></button>
     <button id="theme-toggle" class="btn" type="button"></button>
   </div>
@@ -36,6 +38,7 @@
   <div id="map"></div>
   <button id="panel-toggle" class="btn" type="button" aria-controls="panel-wrap" aria-expanded="true"></button>
   <aside id="panel-wrap">
+    <button id="about-flock" class="btn about-btn" type="button" data-modal="how-data-is-shared">About Flock Data</button>
     <div id="panel"></div>
     <footer id="provenance">
       Camera locations: DeFlock / OpenStreetMap contributors (ODbL), crowd-sourced and
@@ -44,7 +47,12 @@
   </aside>
 </main>
 
+<dialog id="modal">
+  <button class="modal-close btn" type="button" data-close-modal aria-label="Close">×</button>
+  <div id="modal-body"></div>
+</dialog>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="code/main.js"></script>
 </body>
 </html>

@@ -88,7 +88,7 @@ main {
   min-width: 0;
 }
 aside {
-  flex: 0 0 50%;
+  flex: 0 0 33.333%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -116,7 +116,7 @@ main.collapsed aside {
 #panel-toggle {
   position: absolute;
   top: 12px;
-  right: 50%;
+  right: 33.333%;
   z-index: 1000;
   height: 34px;
   padding: 0 8px;
@@ -371,3 +371,60 @@ a.btn {
   display: inline-block;
   text-decoration: none;
 }
+
+/* Pop-up window ("How the data is used and shared") */
+#modal {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  overflow-y: auto;
+}
+#modal::backdrop { background: rgba(0, 0, 0, 0.5); }
+#modal .modal-close { position: sticky; top: 0; float: right; }
+#modal .data-use { margin-top: 0; }
+
+/* Big "About Flock Data" button at the top of the side panel */
+.about-btn {
+  flex: none;
+  margin: 12px 16px 0;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--campus);
+  border-color: var(--campus);
+  color: #fff;
+}
+.about-btn:hover { border-color: var(--campus); filter: brightness(0.92); }
+
+/* Tabs on a campus camera's panel */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.tab {
+  font: inherit;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: var(--panel);
+  border-color: var(--line);
+  color: var(--campus);
+  font-weight: 700;
+  margin-bottom: -1px;
+  padding-bottom: 9px;
+}
+[role="tabpanel"][hidden] { display: none; }
+#modal .more-info h4 { margin: 18px 0 6px; }
+#modal .more-info li { margin-bottom: 6px; }
