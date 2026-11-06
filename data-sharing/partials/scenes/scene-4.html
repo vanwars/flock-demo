@@ -3,20 +3,12 @@
   Real-world examples belong in facts-4.html, with sources.
 -->
 <header class="scene-head">
-  <p class="eyebrow">Scene 4 of 4</p>
-  <h2 tabindex="-1">Buying the missing piece</h2>
+  <p class="eyebrow">4 of 4</p>
+  <h2 tabindex="-1">Beyond the car: the phone in their pocket</h2>
   <p class="lede">
-    Plate reads say <i>where and when</i>, but no name. A purchased file of phone locations says where and
-    when too, tagged with an anonymous advertising ID. Neither names anyone. Lining them up does.
+    The registry gave us a name and an address. A purchased file of phone locations adds what the car never
+    shows: where this person goes when they leave it. First we find their phone.
   </p>
-  <div class="try">
-    <b>Try this</b>
-    <ol>
-      <li>Press <i>Add a sighting</i> a few times</li>
-      <li>Watch the phones that could be the driver shrink</li>
-      <li>Then join the purchased files</li>
-    </ol>
-  </div>
 </header>
 
 <section class="card" aria-label="Lining up sightings with phone pings">
@@ -28,7 +20,15 @@
     <button class="btn small" id="s4-play" type="button">▶ Play</button>
     <button class="btn primary as-go" type="button"><span class="as-label"></span> <span class="as-icon" aria-hidden="true">→</span></button>
   </div>
+  <div class="parts">
+    <select id="s4-tab" aria-label="Which step">
+      <option value="phone" data-short="1 · Find the phone">1 · Find the phone</option>
+      <option value="reveal" data-short="2 · What a phone reveals">2 · What a phone reveals</option>
+      <option value="join" data-short="3 · Add records">3 · Add records</option>
+    </select>
+  </div>
   <div class="card-body">
+   <div class="part" id="s4-tab-phone">
     <div class="controls" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <div class="ctl">
         <label class="ctl-label" for="s4-k">Plate sightings lined up with phone pings</label>
@@ -58,33 +58,59 @@
         <div class="ring" role="img" aria-label="Share of the town's phones still possible">
           <div class="ring-n" id="s4-n">100</div>
         </div>
-        <div><b>phones</b> could be this car's driver</div>
+        <div><b>phones</b> could be the owner's</div>
         <div id="s4-ids" class="ids"></div>
       </div>
     </div>
     <p id="s4-msg" class="note" style="margin-top:12px" aria-live="polite"></p>
-  </div>
-</section>
+   </div>
 
-<section class="block" aria-labelledby="s4-buy">
-  <h3 id="s4-buy">Then buy the rest</h3>
-  <p>
-    Once one advertising ID is tied to the plate, other purchased files that use the same ID can attach a phone
-    number, a name, an address, shopping habits. Each file only needs to share one key with another.
-  </p>
-  <div class="card" style="margin-top:12px"><div class="card-body">
+   <div class="part" id="s4-tab-reveal" hidden>
+    <h3>How a phone is found</h3>
+    <p class="note" style="max-width:66ch">
+      This is how location data works in general; the numbers in the scene are invented. A phone does not
+      need to be tracked by a camera. Apps on it report where it is.
+    </p>
+    <ul class="limits">
+      <li><b>GPS</b>The phone listens to satellites and works out its own position, usually within a few meters outdoors.</li>
+      <li><b>Wi-Fi and Bluetooth</b>Nearby networks and beacons are matched against a known map, which works indoors where GPS does not.</li>
+      <li><b>Cell towers (triangulation)</b>Signal strength and timing to two or three towers narrow the phone to an area, often tens to hundreds of meters.</li>
+      <li><b>Apps report it</b>A weather or game app asks for location once. A code library inside it keeps sending the position, a timestamp and the phone's advertising ID to a data broker.</li>
+    </ul>
+    <p class="note" style="max-width:66ch">
+      That is why the matching in step 1 works: a broker's file is a long list of "this advertising ID was
+      here at this time," and a plate sighting is "this car was here at this time."
+    </p>
+
+    <h3 style="margin-top:28px">What a phone reveals that a car does not</h3>
+    <ul class="limits">
+      <li><b>Home and work</b>Where the phone sits overnight and through the workday, down to the building.</li>
+      <li><b>Regular visits</b>A clinic, a place of worship, a union hall, a bar, once or every week.</li>
+      <li><b>Life on foot</b>Trips the car never made: a walk, a bus ride, a friend's house.</li>
+      <li><b>Who else is there</b>Phones that keep turning up in the same place at the same time.</li>
+      <li><b>Changes</b>A new overnight address, a long stay at a hospital, a sudden stop in a routine.</li>
+    </ul>
+    <p style="margin-top:16px"><button class="btn primary" id="s4-to-join" type="button">Next: add records →</button></p>
+   </div>
+
+   <div class="part" id="s4-tab-join" hidden>
+    <h3>Add records that share a key</h3>
+    <p class="note" style="max-width:66ch">
+      Once one advertising ID is tied to the plate, other purchased files that use the same ID, phone number
+      or name can attach contact details, household members and shopping habits. Each file only needs to
+      share one key with another.
+    </p>
     <div id="s4-join"></div>
     <p style="margin-top:12px"><button class="btn small" id="s4-reset" type="button">↺ Start over</button></p>
-  </div></div>
-</section>
 
-<section class="block" aria-labelledby="s4-limits">
-  <h3 id="s4-limits">What would limit this</h3>
-  <ul class="limits">
-    <li><b>Shorter retention</b>On reads and on purchased location data: fewer sightings to line up.</li>
-    <li><b>Warrant or court-order rules</b>For searching reads and for buying data about people.</li>
-    <li><b>Limits on sharing</b>Outside the agency that owns the camera, and on who may search.</li>
-    <li><b>Search logs</b>With a specific reason and a case number, reviewed and published.</li>
-    <li><b>Vendor limits</b>Not collecting or selling precise phone locations in the first place.</li>
-  </ul>
+    <h3 style="margin-top:28px" id="s4-limits">What would limit this</h3>
+    <ul class="limits">
+      <li><b>Shorter retention</b>On reads and on purchased location data: fewer sightings to line up.</li>
+      <li><b>Warrant or court-order rules</b>For searching reads and for buying data about people.</li>
+      <li><b>Limits on sharing</b>Outside the agency that owns the camera, and on who may search.</li>
+      <li><b>Search logs</b>With a specific reason and a case number, reviewed and published.</li>
+      <li><b>Vendor limits</b>Not collecting or selling precise phone locations in the first place.</li>
+    </ul>
+   </div>
+  </div>
 </section>

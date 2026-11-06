@@ -234,6 +234,7 @@ export function mount(root) {
     deliveryCb.checked = p.delivery;
     hispCb.checked = p.hisp;
     age.value = p.age;
+    $("#s2c-who").open = true; // show the "Who" filters the example just turned on
     sync(deliveryCb, hispCb, age);
     run();
   };

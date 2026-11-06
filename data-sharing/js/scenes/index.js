@@ -18,16 +18,15 @@ const stepper = $("stepper");
 const sceneEl = $("scene");
 const factsEl = $("facts");
 const outroEl = $("outro");
-const introEl = $("intro");
 const prev = $("prev");
 const next = $("next");
 let current = -1;
 let cleanup = () => {};
 
-// ----- stepper: connected steps on wide screens, "Scene 2 of 4" on phones -----
+// ----- stepper: scene title and count on the left, one dot per scene on the right -----
 stepper.innerHTML = `<div class="stepper-inner">
+  <div class="step-compact"><strong id="sc-title"></strong><small id="sc-count"></small></div>
   <ol class="steps"></ol>
-  <div class="step-compact" aria-hidden="true"><div><strong id="sc-title"></strong><small id="sc-count"></small></div></div>
   <div class="step-progress" id="step-progress"></div>
 </div>`;
 const stepsOl = stepper.querySelector(".steps");
@@ -36,7 +35,8 @@ SCENES.forEach((s, i) => {
   const b = document.createElement("button");
   b.type = "button";
   b.className = "step";
-  b.innerHTML = `<b>${i + 1}</b><span>${s.title}</span>`;
+  b.setAttribute("aria-label", `Scene ${i + 1}: ${s.title}`);
+  b.title = s.title;
   b.onclick = () => go(i);
   li.appendChild(b);
   stepsOl.appendChild(li);
@@ -47,25 +47,6 @@ const fromHash = () => {
   return n >= 1 && n <= TOTAL ? n - 1 : 0;
 };
 
-// ----- intro card (scene 1 only, dismissible, remembered) -----
-const INTRO_KEY = "scenes-intro-dismissed";
-const introSeen = () => {
-  try {
-    return localStorage.getItem(INTRO_KEY) === "1";
-  } catch {
-    return false;
-  }
-};
-function dismissIntro() {
-  introEl.hidden = true;
-  try {
-    localStorage.setItem(INTRO_KEY, "1");
-  } catch {}
-  sceneEl.querySelector("h2")?.focus({ preventScroll: true });
-}
-$("intro-start").onclick = dismissIntro;
-$("intro-skip").onclick = dismissIntro;
-
 // ----- sources box: wrap the partial in a collapsed <details> with a count -----
 function wrapFacts(html) {
   const tmp = document.createElement("div");
@@ -73,9 +54,7 @@ function wrapFacts(html) {
   const section = tmp.querySelector("section");
   if (!section) return html;
   section.querySelector("h3")?.remove();
-  const sourced = section.querySelectorAll("li .chip.ok").length;
-  return `<details class="facts"><summary>What is documented
-      <span class="chip ok">${sourced} sourced</span><small>Tap to see the sources</small></summary>
+  return `<details class="facts"><summary>Sources</summary>
       <div class="facts-body">${section.innerHTML}</div></details>`;
 }
 
@@ -114,11 +93,9 @@ function updateChrome(i) {
   $("sc-count").textContent = `Scene ${n} of ${TOTAL}`;
   $("step-progress").style.width = `${(n / TOTAL) * 100}%`;
   prev.disabled = i === 0;
-  $("prev-label").textContent = i === 0 ? "Back" : `Scene ${i}`;
+  $("prev-label").textContent = "Back";
   const last = i === TOTAL - 1;
-  $("next-label").innerHTML = last
-    ? "Back to the map"
-    : `<span class="long">Next: ${SCENES[i + 1].title}</span><span class="short">Next scene</span>`;
+  $("next-label").textContent = last ? "Back to the map" : "Next";
   document.title = `Scene ${n} of ${TOTAL}: ${SCENES[i].title} · How plate reads add up`;
 }
 
@@ -149,7 +126,6 @@ async function go(i, { initial = false } = {}) {
     sceneEl.innerHTML = sceneHtml;
     factsEl.innerHTML = wrapFacts(factsHtml);
     outroEl.innerHTML = outroHtml;
-    introEl.hidden = !(i === 0 && !introSeen());
     enterScene(n);
     const mod = SCENES[i].mod ?? (await import(`./scene${n}.js`));
     if (current !== i) return;

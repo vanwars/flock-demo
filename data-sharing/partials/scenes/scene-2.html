@@ -3,20 +3,12 @@
   Filled in by js/scenes/scene2.js. Part A = how joins work (join.js). Part B = search everyone.
 -->
 <header class="scene-head">
-  <p class="eyebrow">Scene 2 of 4</p>
+  <p class="eyebrow">2 of 4</p>
   <h2 tabindex="-1">A plate becomes a person</h2>
   <p class="lede">
     A plate reader never learns a name. But a plate is a <b>key</b>, and any list that also contains plates
     can be joined onto it. Learn how a join works, then search a whole town.
   </p>
-  <div class="try">
-    <b>Try this</b>
-    <ol>
-      <li>In part A, press <i>Join</i> four times</li>
-      <li>Switch to part B and click a camera</li>
-      <li>Turn on filters and check the guesses</li>
-    </ol>
-  </div>
 </header>
 
 <section class="card" aria-label="Joins and search">
@@ -31,10 +23,9 @@
 
   <div class="parts">
     <select id="s2-part" aria-label="Which part">
-      <option value="a" data-short="A · How a join works">A · How a join works (one car)</option>
-      <option value="b" data-short="B · Search everyone">B · Search everyone (100 cars)</option>
+      <option value="a" data-short="One car">One car: how a join works</option>
+      <option value="b" data-short="Everyone">Everyone: search a whole town (100 cars)</option>
     </select>
-    <p class="note">Part A explains the idea with one car. Part B does the same for the whole town.</p>
   </div>
 
   <div class="card-body">
@@ -59,9 +50,8 @@
         <button class="btn small" type="button" data-s2c="c">Delivery drivers, any</button>
       </div>
       <p class="note" style="max-width:70ch">
-        An invented town of 100 people and 12 cameras. Registry fields (name, age, sex) are exact.
-        Two things are <b>guesses</b>: a "likely delivery driver" (guessed from driving pattern alone) and
-        a "likely Hispanic" (guessed from surname and neighborhood, because race is on no registry record).
+        An invented town of 100 people and 12 cameras. Names, ages and sex come from a registry.
+        "Likely delivery driver" and "likely Hispanic" are <b>guesses</b>.
       </p>
       <div class="search-grid">
         <div>
@@ -88,8 +78,8 @@
               </select>
             </div>
           </fieldset>
-          <fieldset class="fgroup">
-            <legend>Who (joined data)</legend>
+          <details class="fgroup fdetails" id="s2c-who">
+            <summary>Who <small>(joined data)</small></summary>
             <div class="ctl-row">
               <label><input type="checkbox" id="s2c-delivery"> Likely delivery driver</label>
               <label><input type="checkbox" id="s2c-hisp"> Likely Hispanic</label>
@@ -106,7 +96,7 @@
               <label class="ctl-label" for="s2c-age">Younger than (age, from registry)</label>
               <input type="range" id="s2c-age" min="19" max="80" value="80">
             </div>
-          </fieldset>
+          </details>
         </div>
       </div>
 
@@ -119,8 +109,7 @@
         <div class="tablewrap"><table id="s2c-table" class="restable"></table></div>
         <p class="note" style="max-width:70ch">
           Every row is a person the system treats as a match. A wrong guess flags someone for something they are
-          not, and the people the guess misses are never flagged. The search returns a list either way, and it
-          needed no name, only a place.
+          not, and it needed no name, only a place.
         </p>
       </div>
     </div>

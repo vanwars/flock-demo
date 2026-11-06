@@ -42,7 +42,7 @@ const ROWS = [
     }))),
   { id: "fedcase", stage: 3, label: "Federal case records", value: () => "Whether a case exists, past contact (generic)", show: (s) => s.federal, w: 6, src: "joined" },
   { id: "fedlinks", stage: 3, label: "Linked people", value: () => "Others at the same address or on the same records", show: (s) => s.federal, w: 4, src: "joined" },
-  { id: "phones", stage: 4, label: "Phones that could be the driver's", value: (s) => `${s.cand} of 100`, show: (s) => s.k > 0 && s.cand > 1, w: 1, src: "estimate" },
+  { id: "phones", stage: 4, label: "Phones that could be the owner's", value: (s) => `${s.cand} of 100`, show: (s) => s.k > 0 && s.cand > 1, w: 1, src: "estimate" },
   { id: "adid", stage: 4, label: "Advertising ID", value: () => buildWorld().people[5].adId, show: (s) => s.cand === 1, w: 4, src: "joined" },
   { id: "where", stage: 4, label: "Where the phone goes when the car is parked", value: () => "Home, work, errands, on foot", show: (s) => s.cand === 1, w: 4, src: "joined" },
   { id: "contact", stage: 4, label: "Phone number and email", value: () => "(555) 010-0417 · alex@example.test", show: (s) => s.cand === 1 && s.files.b, w: 4, src: "joined" },

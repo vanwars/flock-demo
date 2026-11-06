@@ -1,5 +1,6 @@
-// Scene 4: lining up plate sightings with purchased phone pings narrows 100 phones to one,
-// then purchased files join a name, address and shopping habits onto the plate. All invented.
+// Scene 4, three tabs: (1) line up plate sightings with purchased phone pings to narrow 100 phones to one,
+// (2) notes on how a phone is located and what it reveals, (3) join purchased files (contact, household,
+// shopping) onto the row. The name already came from the registry in scene 2. All invented.
 import { el, clockText, player } from "./shared.js";
 import { update as cardUpdate } from "./card.js";
 import { createJoin } from "./join.js";
@@ -14,6 +15,9 @@ export function mount(root) {
   const w = buildWorld();
   const me = w.people[TARGET];
   const strip = actionStrip(root);
+  const tabSel = $("#s4-tab");
+  const panes = { phone: $("#s4-tab-phone"), reveal: $("#s4-tab-reveal"), join: $("#s4-tab-join") };
+  let tab = "phone";
   const slider = $("#s4-k");
   const precSel = $("#s4-prec");
   let result = null;
@@ -26,6 +30,7 @@ export function mount(root) {
   $(".ring").prepend(ringSvg);
 
   segmented(precSel);
+  segmented(tabSel);
   const range = rangeWithTicks(slider, { ticks: [[0, "0"], [6, "6"], [12, "12"]], fmt: (v) => `${v} lined up` });
 
   // ----- map -----
@@ -47,15 +52,16 @@ export function mount(root) {
   // ----- the purchased-file joins -----
   const others = [w.people[6], w.people[7]];
   const join = createJoin($("#s4-join"), {
-    rowTitle: "Our row: the plate, and the phone we just found",
+    rowTitle: "Our row: the plate, the registered owner, and the phone we just found",
     baseCells: [
       { id: "plate", label: "Plate", value: me.plate, src: "camera" },
+      { id: "name", label: "Name (from the registry)", value: "Alex Example", src: "joined" },
       { id: "where", label: "Where and when", value: "6 weeks of sightings", src: "camera" },
     ],
-    crumbs: ["plate", "ad ID", "phone · email", "name", "shopping"],
+    crumbs: ["plate", "ad ID", "phone · email", "household", "shopping"],
     baseReached: () => (n === 1 ? 2 : 1),
-    startCaption: "Add sightings above until one phone is left, then join the purchased files.",
-    gate: (i) => (i === 0 && n !== 1 ? { ok: false, why: "Add sightings above until only one phone is left." } : { ok: true }),
+    startCaption: "Find the phone in step 1 first, then join the purchased files.",
+    gate: (i) => (i === 0 && n !== 1 ? { ok: false, why: "Go back to step 1 and add sightings until only one phone is left." } : { ok: true }),
     steps: [
       {
         file: "Advertising-ID linking file", key: "ad ID", keyCell: "adid", keyValue: me.adId,
@@ -67,12 +73,11 @@ export function mount(root) {
       {
         file: "People-search / credit-header file", key: "phone · email", keyCell: "contact", keyValue: "(555) 010-0417",
         rows: [["(555) 010-0417", "Alex Example · 2 adults · 2 earlier addresses"], ["(555) 010-2231", "J. Rivera · 1 adult"], ["(555) 010-8842", "M. Kim · 3 adults"]],
-        matchIndex: 0, adds: "name, household members, past addresses", arrow: "people-search",
+        matchIndex: 0, adds: "household members, past addresses", arrow: "people-search",
         cells: [
-          { id: "name", label: "Name", value: "Alex Example", src: "joined" },
           { id: "household", label: "Household, past addresses", value: "2 adults here; 2 earlier addresses", src: "joined" },
         ],
-        caption: "Looked up the phone number in a people-search file. Found 1 row. Our row now has a name, who lives with them, and where they lived before.",
+        caption: "Looked up the phone number in a people-search file. Found 1 row. It confirms the registry name, and our row now shows who lives with them and where they lived before.",
       },
       {
         file: "Loyalty-card purchases", key: "name", keyCell: "name", keyValue: "Alex Example",
@@ -82,7 +87,10 @@ export function mount(root) {
         caption: "Looked up the name in a loyalty-card file. Found 1 row. Our row now says what this household buys, and how often.",
       },
     ],
-    onChange: () => publish(),
+    onChange: () => {
+      publish();
+      if (tab === "join") stripForJoin();
+    },
   });
   function files() {
     const d = join.state().done;
@@ -146,14 +154,14 @@ export function mount(root) {
     if (n === 1) {
       strip.set({
         step: "Found it", total: 0,
-        title: `One phone left after ${k} sightings. Now buy the missing files.`,
-        label: "Buy the missing files", onClick: () => $("#s4-join").scrollIntoView({ behavior: "smooth", block: "center" }),
+        title: `One phone left after ${k} sightings. It is probably the owner's.`,
+        label: "What a phone reveals", onClick: () => setTab("reveal"),
       });
       if (prevN !== 1) announce(`Only one phone is left after ${k} sightings.`);
     } else {
       strip.set({
         step: k ? `Sighting ${k} of ${max}` : "Start", total: 0,
-        title: `${n} phone${n === 1 ? "" : "s"} could be the driver. ${k < max ? "Add a sighting to narrow it down." : "That is every sighting there is."}`,
+        title: `${n} phone${n === 1 ? "" : "s"} could be the owner's. ${k < max ? "Add a sighting to narrow it down." : "That is every sighting there is."}`,
         label: k < max ? "Add a sighting" : "Start over", onClick: () => {
           slider.value = k < max ? k + 1 : 0;
           slider.dispatchEvent(new Event("sync"));
@@ -181,11 +189,48 @@ export function mount(root) {
     slider.value = 0;
     slider.dispatchEvent(new Event("sync"));
     draw();
+    setTab("phone");
   });
+  $("#s4-to-join").addEventListener("click", () => setTab("join"));
+
+  // ----- tabs -----
+  function stripForReveal() {
+    strip.set({
+      step: "Step 2 of 3", total: 0, title: "Read how a phone is located and what it gives away",
+      label: "Add records", onClick: () => setTab("join"),
+    });
+  }
+  function stripForJoin() {
+    const s = join.state();
+    if (s.next) {
+      strip.set({
+        step: "Step 3 of 3", total: 0,
+        title: `Join the ${s.next.file.toLowerCase()} (matches on ${s.next.key})`,
+        label: `Join: ${s.next.file}`, onClick: join.joinNext,
+      });
+    } else {
+      strip.set({ step: "Step 3 of 3", total: 0, title: "All three files joined. The row now describes a life.", hideButton: true });
+    }
+  }
+  function setTab(t) {
+    tab = t;
+    tabSel.value = t;
+    tabSel.dispatchEvent(new Event("sync"));
+    for (const [id, pane] of Object.entries(panes)) pane.hidden = id !== t;
+    playBtn.hidden = t !== "phone";
+    if (t !== "phone") play.stop();
+    if (t === "phone") draw();
+    else {
+      if (t === "reveal") stripForReveal();
+      else stripForJoin();
+      join.refresh();
+    }
+  }
+  tabSel.addEventListener("change", () => setTab(tabSel.value));
 
   compute();
   slider.value = 0;
   slider.dispatchEvent(new Event("sync"));
-  draw();
+  setTab("phone");
   return () => play.stop();
 }
